@@ -1,173 +1,114 @@
 import matplotlib.pyplot as plt
 import csv
 import numpy as np
+from matplotlib.gridspec import GridSpec
 
-# 해당 list의 특정 index값만 추출하기위한 Cnt 
-capitalAreaCharterCnt = 0
-provinceCharterCnt = 0
-# 특정 index의 값들만을 추출하여 저장한 list
-capitalAreaCharterSample = []
-provinceCharterSample = []
+# 전세 데이터 처리
+capitalAreaCharterCnt = 0  # 수도권 전세 데이터 카운터 초기화
+provinceCharterCnt = 0  # 지방 전세 데이터 카운터 초기화
+capitalAreaCharterSample = []  # 수도권 전세 샘플을 저장할 리스트
+provinceCharterSample = []  # 지방 전세 샘플을 저장할 리스트
+xbarCharterList = []  # x축 라벨을 저장할 리스트
 
-# x축에 표시할 항목의 이름을 저장한 리스트(일자)
-xbarCharterList = []
+# 'charter.csv' 파일을 읽고 데이터 처리
+with open('charter.csv', 'r') as file:
+    data = csv.reader(file)  # csv 파일을 읽기 위한 reader 생성
+    header = next(data)  # 첫 번째 행은 헤더
+    wholeCountryCharter = next(data)  # 두 번째 행은 전국 전세 데이터
+    capitalAreaCharter = next(data)  # 세 번째 행은 수도권 전세 데이터
+    provinceCharter = next(data)  # 네 번째 행은 지방 전세 데이터
 
-# 파일 가공처리 부분
-with open( 'charter.csv', 'r') as file :
-    data = csv.reader(file)
-    # 헤더 - 연도별 항목들을 출력
-    header = next(data)
-    # 전체항목 - 전 지역의 전세값을 더하여 나타내는 데이터
-    wholeCountryCharter = next(data)
-    # 수도권의 전세값들을 나타내는 데이터
-    capitalAreaCharter = next(data)
-    # 지방의 전세값들을 나타내는 데이터
-    provinceCharter = next(data)
-
-    # 반복문을 통하여 수도권데이터에서 원하는 값만을 추출
-    for index in range(len(capitalAreaCharter)) :
-        # 횟수를 증가시키고 증가한 횟수에 따른 조건을 통해 원하는 데이터를 추출하여 저장
+    # 수도권 전세 데이터에서 4번째 데이터마다 샘플링
+    for index in range(len(capitalAreaCharter)):
         capitalAreaCharterCnt += 1
-        if capitalAreaCharterCnt % 4 == 2 :
+        if capitalAreaCharterCnt % 4 == 2:  # 인덱스가 2일 때마다 샘플링
             capitalAreaCharterSample.append(capitalAreaCharter[capitalAreaCharterCnt])
-    # 반복문을 통하여 지방데이터에서 원하는 값만을 추출
-    for index in range(len(provinceCharter)) :
-        # 횟수를 증가시키고 증가한 횟수에 따른 조건을 통해 원하는 데이터를 추출하여 저장
+    
+    # 지방 전세 데이터에서 4번째 데이터마다 샘플링
+    for index in range(len(provinceCharter)):
         provinceCharterCnt += 1
-        if provinceCharterCnt % 4 == 2 :
+        if provinceCharterCnt % 4 == 2:  # 인덱스가 2일 때마다 샘플링
             provinceCharterSample.append(provinceCharter[provinceCharterCnt])
-            # x축에 일자를 나타내기위해 header에서 해당 일자를 추출하여 가공 및 저장
-            xbarCharterList.append(header[provinceCharterCnt][2:7])
+            xbarCharterList.append(header[provinceCharterCnt][2:7])  # x축 라벨 추가
 
-# 데이터 시각화 부분
-plt.rc('xtick', labelsize=7)  # x축 눈금 폰트 크기
-plt.rc('ytick', labelsize=7)  # x축 눈금 폰트 크기
-plt.rc('axes', labelsize=7)   # x,y축 label 폰트 크기
+# 월세 데이터 처리
+capitalAreaMonthlyCnt = 0  # 수도권 월세 데이터 카운터 초기화
+provinceMonthlyCnt = 0  # 지방 월세 데이터 카운터 초기화
+capitalAreaMonthlySample = []  # 수도권 월세 샘플을 저장할 리스트
+provinceMonthlySample = []  # 지방 월세 샘플을 저장할 리스트
+xbarMonthlyList = []  # x축 라벨을 저장할 리스트
 
-# Runtime Configuration Parameters의 dict데이터에 폰트를 변경하기위한 설정
-# 해당 설정을 통해 한글출력가능
-plt.rcParams['font.family'] = 'Malgun Gothic'
+# 'monthly.csv' 파일을 읽고 데이터 처리
+with open('monthly.csv', 'r') as file:
+    data = csv.reader(file)  # csv 파일을 읽기 위한 reader 생성
+    header = next(data)  # 첫 번째 행은 헤더
+    wholeCountryMonthly = next(data)  # 두 번째 행은 전국 월세 데이터
+    capitalAreaMonthly = next(data)  # 세 번째 행은 수도권 월세 데이터
+    provinceMonthly = next(data)  # 네 번째 행은 지방 월세 데이터
 
-# pyplot의 그래프는 figure와 Ax로 구성
-# (Ax)그래프가 들어가는 figure(액자)를 미리 선언
-fig = plt.figure()
-
-# subplot()을 통하여 액자안에 여러개의 그래프 추가 가능
-# 수도권의 전세 그래프를 시각화
-ax1 = fig.add_subplot(2,1,1)
-ax1.plot(list(map(int, capitalAreaCharterSample)), color='blue', label='수도권 전세')
-plt.title('수도권/지방 전세 비교 그래프')
-plt.ylabel('(천원) ', loc='top') # y라벨 추가 
-plt.xticks(np.arange(0,36), xbarCharterList)# x축 항목값 설정
-plt.grid() # 격자무늬 추가
-plt.legend() # 범례 추가
-
-# 지방의 전세 그래프를 시각화
-ax2 = fig.add_subplot(2,1,2)
-ax2.plot(list(map(int, provinceCharterSample)), color='purple', label='지방 전세')
-plt.xlabel('(날짜)', loc='right') # x라벨 추가
-plt.xticks(np.arange(0,36), xbarCharterList)# x축 항목값 설정
-plt.grid() # 격자무늬 추가
-plt.legend() # 범례 추가
-
-fig.subplots_adjust(hspace = 0.1) # 두 그래프 사이의 상하 간격 설정
-
-# 두 그래프 사이의 간격차를 나타내기 위한 불필요한  요소 제거
-ax1.spines.bottom.set_visible(False)
-ax2.spines.top.set_visible(False)
-ax1.xaxis.tick_top()
-ax1.tick_params(labeltop=False)
-ax2.xaxis.tick_bottom()
-
-# 각 그래프별 나타낼 y축 범위 설정
-ax1.set_ylim(4750, 5100) # 위 그래프 y축 범위 설정
-ax2.set_ylim(2450, 2800) # 아래 그래프 y축 범위 설정
-
-# 그래프 출력
-plt.show()
-
-## =====================================================
-
-# 해당 list의 특정 index값만 추출하기위한 Cnt 
-capitalAreaMonthlyCnt = 0
-provinceMonthlyCnt = 0
-
-# 특정 index의 값들만을 추출하여 저장한 list
-capitalAreaMonthlySample = []
-provinceMonthlySample = []
-
-# x축에 표시할 항목의 이름을 저장한 리스트(일자)
-xbarMonthlyList = []
-
-# 파일 가공처리 부분
-with open( 'monthly.csv', 'r') as file :
-    data = csv.reader(file)
-    # 헤더 - 연도별 항목들을 출력
-    header = next(data)
-    # 전체항목 - 전 지역의 월세값을 더하여 나타내는 데이터
-    wholeCountryMonthly = next(data)
-    # 수도권의 월세값들을 나타내는 데이터
-    capitalAreaMonthly = next(data)
-    # 지방의 월세값들을 나타내는 데이터
-    provinceMonthly = next(data)
-
-    # 반복문을 통하여 수도권데이터에서 원하는 값만을 추출
-    for index in range(len(capitalAreaMonthly)) :
-        # 횟수를 증가시키고 증가한 횟수에 따른 조건을 통해 원하는 데이터를 추출하여 저장
+    # 수도권 월세 데이터에서 4번째 데이터마다 샘플링
+    for index in range(len(capitalAreaMonthly)):
         capitalAreaMonthlyCnt += 1
-        if capitalAreaMonthlyCnt % 4 == 2 :
+        if capitalAreaMonthlyCnt % 4 == 2:  # 인덱스가 2일 때마다 샘플링
             capitalAreaMonthlySample.append(capitalAreaMonthly[capitalAreaMonthlyCnt])
-    # 반복문을 통하여 지방데이터에서 원하는 값만을 추출
-    for index in range(len(provinceMonthly)) :
-        # 횟수를 증가시키고 증가한 횟수에 따른 조건을 통해 원하는 데이터를 추출하여 저장
+    
+    # 지방 월세 데이터에서 4번째 데이터마다 샘플링
+    for index in range(len(provinceMonthly)):
         provinceMonthlyCnt += 1
-        if provinceMonthlyCnt % 4 == 2 :
+        if provinceMonthlyCnt % 4 == 2:  # 인덱스가 2일 때마다 샘플링
             provinceMonthlySample.append(provinceMonthly[provinceMonthlyCnt])
-            # x축에 일자를 나타내기위해 header에서 해당 일자를 추출하여 가공 및 저장
-            xbarMonthlyList.append(header[provinceMonthlyCnt][2:7])
+            xbarMonthlyList.append(header[provinceMonthlyCnt][2:7])  # x축 라벨 추가
 
-# 데이터 시각화 부분
-plt.rc('xtick', labelsize=7)  # x축 눈금 폰트 크기
-plt.rc('ytick', labelsize=7)  # x축 눈금 폰트 크기
-plt.rc('axes', labelsize=7)   # x,y축 label 폰트 크기
+# 데이터 시각화
+plt.rc('xtick', labelsize=7)  # x축 틱 라벨의 글꼴 크기 설정
+plt.rc('ytick', labelsize=7)  # y축 틱 라벨의 글꼴 크기 설정
+plt.rc('axes', labelsize=7)  # 축 라벨의 글꼴 크기 설정
+plt.rcParams['font.family'] = 'Malgun Gothic'  # 폰트 설정 (맑은 고딕)
 
-# Runtime Configuration Parameters의 dict데이터에 폰트를 변경하기위한 설정
-# 해당 설정을 통해 한글출력가능
-plt.rcParams['font.family'] = 'Malgun Gothic'
+fig = plt.figure(figsize=(10, 10))  # 10x10 크기의 figure 생성
+gs = GridSpec(5, 1, height_ratios=[1, 1, 0.1, 1, 1], hspace=0.3)  # GridSpec 설정
 
-# pyplot의 그래프는 figure와 Ax로 구성
-# (Ax)그래프가 들어가는 figure(액자)를 미리 선언
-fig = plt.figure()
+# 수도권 전세 그래프
+ax1 = fig.add_subplot(gs[0])
+ax1.plot(list(map(int, capitalAreaCharterSample)), color='blue', label='수도권 전세')  # 데이터 플로팅
+ax1.set_title('수도권/지방 전세 비교 그래프')  # 그래프 제목 설정
+ax1.set_ylabel('(천원)', loc='top')  # y축 라벨 설정
+ax1.set_xticks(np.arange(0, 36))  # x축 틱 설정
+ax1.set_xticklabels([''] * 36)  # x축 라벨 비움
+ax1.grid()  # 그리드 추가
+ax1.legend()  # 범례 추가
+ax1.set_ylim(4750, 5100)  # y축 범위 설정
 
-# subplot()을 통하여 액자안에 여러개의 그래프 추가 가능
-# 수도권의 월세 그래프를 시각화
-ax3 = fig.add_subplot(2,1,1)
-ax3.plot(list(map(int, capitalAreaMonthlySample)), color='red', label='수도권 월세')
-plt.title('수도권/지방 월세 비교 그래프')
-plt.ylabel('(천원) ', loc='top') # y라벨 추가
-plt.xticks(np.arange(0,36), xbarMonthlyList) # x축 항목값 설정
-plt.grid() # 격자무늬 추가
-plt.legend() # 범례 추가
+# 지방 전세 그래프
+ax2 = fig.add_subplot(gs[1])
+ax2.plot(list(map(int, provinceCharterSample)), color='purple', label='지방 전세')
+ax2.set_xlabel('(날짜)', loc='right')  # x축 라벨 추가
+ax2.set_xticks(np.arange(0, 36))
+ax2.set_xticklabels(xbarCharterList, rotation=45)  # x축 라벨 설정
+ax2.grid()
+ax2.legend()
+ax2.set_ylim(2450, 2800)
 
-# 지방의 월세 그래프를 시각화
-ax4 = fig.add_subplot(2,1,2)
+# 수도권 월세 그래프
+ax3 = fig.add_subplot(gs[3])
+ax3.plot(list(map(int, capitalAreaMonthlySample)), color='red', label='수도권 월세')  # 데이터 플로팅
+ax3.set_title('수도권/지방 월세 비교 그래프')  # 그래프 제목 설정
+ax3.set_ylabel('(천원)', loc='top')  # y축 라벨 설정
+ax3.set_xticks(np.arange(0, 36))  # x축 틱 설정
+ax3.set_xticklabels([''] * 36)  # x축 라벨 비움
+ax3.grid()  # 그리드 추가
+ax3.legend()  # 범례 추가
+ax3.set_ylim(690, 730)  # y축 범위 설정
+
+#지방 월세 그래프
+ax4 = fig.add_subplot(gs[4])
 ax4.plot(list(map(int, provinceMonthlySample)), color='green', label='지방 월세')
-plt.xlabel('(날짜)', loc='right') # x라벨 추가
-plt.xticks(np.arange(0,36), xbarMonthlyList) # x축 항목값 설정
-plt.grid() # 격자무늬 추가
-plt.legend() # 범례 추가
+ax4.set_xlabel('(날짜)', loc='right')
+ax4.set_xticks(np.arange(0, 36))
+ax4.set_xticklabels(xbarMonthlyList, rotation=45)
+ax4.grid()
+ax4.legend()
+ax4.set_ylim(490, 530)
 
-fig.subplots_adjust(hspace = 0.1) # 두 그래프 사이의 상하 간격 설정
-
-# 두 그래프 사이의 간격차를 나타내기 위한 불필요한  요소 제거
-ax3.spines.bottom.set_visible(False)
-ax4.spines.top.set_visible(False)
-ax3.xaxis.tick_top()
-ax3.tick_params(labeltop=False)
-ax4.xaxis.tick_bottom()
-
-ax3.set_ylim(690, 730) # 위 그래프  y축 범위 설정
-ax4.set_ylim(490, 530) # 아래 그래프  y축 범위 설정
-
-# 그래프 출력
 plt.show()
+plt.close(fig)
